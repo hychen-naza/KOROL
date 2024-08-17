@@ -1,0 +1,18 @@
+# Korol training single task in four sim envs
+python Door_optimal_feature_training.py 
+python Tool_optimal_feature_training.py 
+python Relocate_optimal_feature_training.py 
+python Reorientation_optimal_feature_training.py 
+
+# Korol multi task training
+python Multitask_optimal_feature_training.py
+
+# KODex single task training, you can change the env at Koopman_gt_operator_training.py line 252 
+python Koopman_gt_operator_training.py
+then 
+python Koopman_gt_operator_eval.py
+
+# Kodex multitask training
+python Koopman_operator_multi_task_training.py
+then 
+python Koopman_manipulation_multi_task_eval.py
