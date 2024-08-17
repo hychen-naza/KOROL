@@ -20,7 +20,6 @@ source ~/.bashrc
 
 2.create a conda environment for mjrl and install mjrl
 cd mjrl repo
-# !!! Delete line 21 (mujoco-py) in mjrl/setup/env.yml, later we will install it manually !!!
 conda update conda
 conda env create -f setup/env.yml
 source activate mjrl-env
@@ -43,6 +42,4 @@ pip install "cython<3"
 got into the mj_envs
 pip install -e .
 
-4.install KODex related packages
-
-# Use my code
+4.Run Korol code and install missing packages with pip as you need
