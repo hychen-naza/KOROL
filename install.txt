@@ -1,0 +1,48 @@
+1.install mujoco2.1.0
+
+# Download binary file of mujoco2.1.0
+cd ~
+mkdir .mujoco
+cd .mujoco
+wget https://github.com/deepmind/mujoco/releases/download/2.1.0/mujoco210-linux-x86_64.tar.gz
+mv mujoco210-linux-x86_64.tar.gz mujoco210
+tar -zxvf mujoco210
+
+# Add Environment variables to ~/.bashrc
+sudo gedit ~/.bashrc
+# Add the following 4 commands at the end of .bashrc
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/.mujoco/mujoco210/bin
+export MUJOCO_KEY_PATH=~/.mujoco${MUJOCO_KEY_PATH}
+export MUJOCO_PY_FORCE_CPU=True
+alias MJPL='LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libGLEW.so:/usr/lib/nvidia-384/libGL.so'
+# Source ~/.bashrc to commit the changes
+source ~/.bashrc
+
+2.create a conda environment for mjrl and install mjrl
+cd mjrl repo
+# !!! Delete line 21 (mujoco-py) in mjrl/setup/env.yml, later we will install it manually !!!
+conda update conda
+conda env create -f setup/env.yml
+source activate mjrl-env
+cd mjrl
+pip install -e .
+
+# Now install mujoco-py
+pip install mujoco-py==2.1.2.14
+# We need to check whether mujoco-py is installed successfully. Run python in current conda environment (mjrl-env) and import mujoco_py.
+# If mujoco_py is installed successfully, it should be (compiled and) imported without errors.
+python
+import mujoco_py
+# If mujoco_py is imported for the first time, it will be compiled automatically.
+# If a Cython related error occurs, try changing the version of gcc and Cython
+conda install -c conda-forge gcc=12.1.0
+# important
+pip install "cython<3" 
+
+3.install mj_envs
+got into the mj_envs
+pip install -e .
+
+4.install KODex related packages
+
+# Use my code
