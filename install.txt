@@ -8,6 +8,9 @@ wget https://github.com/deepmind/mujoco/releases/download/2.1.0/mujoco210-linux-
 mv mujoco210-linux-x86_64.tar.gz mujoco210
 tar -zxvf mujoco210
 
+# Put mujoco key in .mujoco folder
+https://www.roboti.us/file/mjkey.txt
+
 # Add Environment variables to ~/.bashrc
 sudo gedit ~/.bashrc
 # Add the following 4 commands at the end of .bashrc
@@ -20,7 +23,6 @@ source ~/.bashrc
 
 2.create a conda environment for mjrl and install mjrl
 cd mjrl repo
-# !!! Delete line 21 (mujoco-py) in mjrl/setup/env.yml, later we will install it manually !!!
 conda update conda
 conda env create -f setup/env.yml
 source activate mjrl-env
@@ -31,18 +33,18 @@ pip install -e .
 pip install mujoco-py==2.1.2.14
 # We need to check whether mujoco-py is installed successfully. Run python in current conda environment (mjrl-env) and import mujoco_py.
 # If mujoco_py is installed successfully, it should be (compiled and) imported without errors.
+
 python
 import mujoco_py
 # If mujoco_py is imported for the first time, it will be compiled automatically.
 # If a Cython related error occurs, try changing the version of gcc and Cython
 conda install -c conda-forge gcc=12.1.0
-# important
 pip install "cython<3" 
+# You are almost done!!!
+
 
 3.install mj_envs
 got into the mj_envs
 pip install -e .
 
-4.install KODex related packages
-
-# Use my code
+4.Run Korol code and install missing packages with pip as you need
