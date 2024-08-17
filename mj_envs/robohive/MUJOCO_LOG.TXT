@@ -1,0 +1,6 @@
+Sat Oct 21 18:56:11 2023
+ERROR: mjv_updateSceneState: m->nu changed
+
+Sat Oct 21 20:22:56 2023
+ERROR: mjv_updateSceneState: m->nu changed
+
