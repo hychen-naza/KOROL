@@ -27,7 +27,6 @@ cd KOROL/mjrl
 conda update conda
 conda env create -f setup/env.yml
 source activate mjrl-env
-cd mjrl
 pip install -e .
 
 # Now install mujoco-py
