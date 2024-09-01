@@ -8,7 +8,6 @@ import os
 import numpy as np
 import gym
 import pickle
-from utils.gym_env_door import GymEnv
 from utils.Observables import *
 from utils.Koopman_evaluation import *
 from utils.Controller import *
