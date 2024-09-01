@@ -22,7 +22,8 @@ export MUJOCO_KEY_PATH=~/.mujoco/mjkey.txt
 source ~/.bashrc
 
 2.create a conda environment for mjrl and install mjrl
-cd mjrl repo
+# Go to mjrl folder
+cd KOROL/mjrl
 conda update conda
 conda env create -f setup/env.yml
 source activate mjrl-env
