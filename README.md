@@ -2,7 +2,9 @@
 
 
 ## Install
-Follow install.txt
+Follow install.txt. 
+
+The Pytorch version we used is 2.3.1+cu121 
 
 ## DataSet
 Download the dataset for Door, Tool, Relocation and Reorientation in sim envs here
