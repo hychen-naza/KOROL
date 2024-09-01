@@ -16,8 +16,8 @@ sudo gedit ~/.bashrc
 # Add the following 4 commands at the end of .bashrc
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/.mujoco/mujoco210/bin
 export MUJOCO_KEY_PATH=~/.mujoco/mjkey.txt
-export MUJOCO_PY_FORCE_CPU=True
-alias MJPL='LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libGLEW.so:/usr/lib/nvidia-384/libGL.so'
+#export MUJOCO_PY_FORCE_CPU=True
+#alias MJPL='LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libGLEW.so:/usr/lib/nvidia-384/libGL.so'
 # Source ~/.bashrc to commit the changes
 source ~/.bashrc
 
