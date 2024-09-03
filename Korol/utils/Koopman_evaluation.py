@@ -145,9 +145,26 @@ def koopman_policy_control(env_name, controller, koopman_object, koopman_matrix,
             set_goal = hand_pos_desired.copy() # next state
             NN_input = torch.from_numpy(np.append(current, set_goal))
             NN_output = controller(NN_input).detach().numpy()
+            #print(NN_output)
+            has_nan = np.isnan(NN_output).any()
+            if (has_nan):
+                break
             e.step(NN_output)  
             obs_dict = e.env.get_obs_dict(e.env.sim)
             current_hinge_pos = obs_dict['door_pos']
+
+            # close loop control
+            if t % 5 == 0 and t > 0:
+                rgb, depth = e.env.mj_render()
+                rgb = (rgb.astype(np.uint8) - 128.0) / 128
+                depth = depth[...,np.newaxis]
+                rgbd = np.concatenate((rgb,depth),axis=2)
+                rgbd = np.transpose(rgbd, (2, 0, 1))
+                rgbd = rgbd[np.newaxis, ...]
+                _, implict_objpos = resnet_model(torch.from_numpy(rgbd).float().to(device)) 
+                obj_OriState = implict_objpos[0].cpu().detach().numpy()
+                z_t = koopman_object.z(z_t[:num_hand], obj_OriState) # only update the object feature   
+
         if current_hinge_pos > 1.35:
             success_list_sim.append(1)
     print("Success rate (sim) = %f" % (len(success_list_sim) / len(Test_data)))
