@@ -6,7 +6,7 @@ Hongyi Chen, Abulikemu Abuduweili\*, Aviral Agrawal\*, Yunhai Han\*, Harish Ravi
 
 [Watch the video](korol_video.mp4)
 
-A link to our paper can be found on [OpenReview](https://openreview.net/forum?id=A6ikGJRaKL&noteId=5JYQQNrhkp).
+A link to our paper can be found on [Arxiv](https://arxiv.org/abs/2407.00548) [OpenReview](https://openreview.net/forum?id=A6ikGJRaKL&noteId=5JYQQNrhkp).
 
 Please cite our paper as:
 
