@@ -1,5 +1,7 @@
 # KOROL
 
+More instructions will come soon.
+
 
 ## Install
 Follow install.txt. 
