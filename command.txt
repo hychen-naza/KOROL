@@ -1,4 +1,7 @@
 # Korol training single task in four sim envs
+# In default, the resnet uses rgbd image + frequency domain image
+# if you want to use rgbd image only, then use "from utils.resnet18 import *"
+# instead of using "from utils.resnet import *"
 python Door_optimal_feature_training.py 
 python Tool_optimal_feature_training.py 
 python Relocate_optimal_feature_training.py 
