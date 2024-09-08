@@ -11,14 +11,10 @@ A link to our paper can be found on [Arxiv](https://arxiv.org/abs/2407.00548) [O
 Please cite our paper as:
 
 ```
-@misc{chen2024korollearningvisualizableobject,
-      title={KOROL: Learning Visualizable Object Feature with Koopman Operator Rollout for Manipulation}, 
-      author={Hongyi Chen and Abulikemu Abuduweili and Aviral Agrawal and Yunhai Han and Harish Ravichandar and Changliu Liu and Jeffrey Ichnowski},
-      year={2024},
-      eprint={2407.00548},
-      archivePrefix={arXiv},
-      primaryClass={cs.RO},
-      url={https://arxiv.org/abs/2407.00548}, 
+@inproceedings{chenkorol,
+  title={KOROL: Learning Visualizable Object Feature with Koopman Operator Rollout for Manipulation},
+  author={Chen, Hongyi and ABUDUWEILI, ABULIKEMU and Agrawal, Aviral and Han, Yunhai and Ravichandar, Harish and Liu, Changliu and Ichnowski, Jeffrey},
+  booktitle={8th Annual Conference on Robot Learning}
 }
 ```
 
