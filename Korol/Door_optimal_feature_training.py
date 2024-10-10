@@ -67,7 +67,7 @@ def main(args):
     folder_name = os.getcwd()
     num_hand = 28 
     num_obj = 8 
-    step_interval = 10 # Object feature loss step interval
+    step_interval = 5 # Object feature loss step interval
 
 
     img_path = "./Door/Data"
@@ -108,6 +108,7 @@ def main(args):
     success_rate = koopman_policy_control("door-v0", Controller, Koopman, cont_koopman_operator, Testing_data, False, num_hand, num_obj, "Drafted", resnet_model=resnet_model, device=device)
     cont_koopman_operator = torch.from_numpy(cont_koopman_operator).to(device)
     
+    #pdb.set_trace()
     loss = torch.nn.L1Loss()
     loss_results = []
     # Train 
@@ -120,25 +121,29 @@ def main(args):
         total_loss = 0
         for batch_num, (rgbds, robot_currents, robot_nexts) in enumerate(dynamics_train_dataloader):
             robot_currents = robot_currents.float().to(device)
-            #pdb.set_trace()
-            
             batch_size = len(robot_currents)
             for i in range(batch_size):
+                #tmp_interval = 5
                 hand_OriState = robot_currents[i]
-                rgbds_single = rgbds[i].float().to(device)
+                rgbds_single = rgbds[i].float().to(device) #[0:tmp_interval]
                 _, pred_feats = resnet_model(rgbds_single)
                 obj_OriState = pred_feats[0]
                 z_t_computed = Koopman.z_torch(hand_OriState, obj_OriState).to(device)
+
                 for t in range(len(robot_nexts)):
+                    # if (t % tmp_interval == 0):
+                    #     # move back to cpu
+                    #     rgbds_single.to("cpu")
+                    #     rgbds_single = rgbds[i][t+1:t+1+tmp_interval].float().to(device)
+                    #     _, pred_feats = resnet_model(rgbds_single)
+
                     robot_next = robot_nexts[t][i].float().to(device)
                     z_t_1_computed = torch.matmul(cont_koopman_operator.float(), z_t_computed.float()) 
                     loss_val = loss(z_t_1_computed[:num_hand], robot_next)
                     ErrorInOriginalRobot += loss_val
-                    if (t > 0 and (t+1) % step_interval == 0):
-                        #pdb.set_trace()
-                        loss_val = loss(z_t_1_computed[2*num_hand:2*num_hand+num_obj], pred_feats[int((t+1)/step_interval)])
+                    if ((t+1) % step_interval == 0):
+                        loss_val = loss(z_t_1_computed[2*num_hand:2*num_hand+num_obj], pred_feats[int((t+1)%step_interval)]) #pred_feats[int((t+1)/step_interval)
                         ErrorInOriginalRobot += loss_val
-                        #pdb.set_trace()
                     z_t_computed = z_t_1_computed
                     total_loss += loss_val.item()
             ErrorInOriginalRobot *= 0.05 # weights

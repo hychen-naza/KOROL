@@ -133,6 +133,10 @@ def koopman_policy_control(env_name, controller, koopman_object, koopman_matrix,
         _, implict_objpos = resnet_model(torch.from_numpy(rgbd).float().to(device)) 
         obj_OriState = implict_objpos[0].cpu().detach().numpy()
         z_t = koopman_object.z(hand_OriState, obj_OriState)  
+
+        #obs_dict = e.env.get_obs_dict(e.env.sim)
+        #pdb.set_trace()
+        current_hinge_pos = 0
         for t in range(horizon - 1): 
             z_t_1_computed = np.dot(koopman_matrix, z_t)
             x_t_1_computed = np.append(z_t_1_computed[:num_hand], z_t_1_computed[2 * num_hand: 2 * num_hand + num_obj])
@@ -163,7 +167,8 @@ def koopman_policy_control(env_name, controller, koopman_object, koopman_matrix,
                 rgbd = rgbd[np.newaxis, ...]
                 _, implict_objpos = resnet_model(torch.from_numpy(rgbd).float().to(device)) 
                 obj_OriState = implict_objpos[0].cpu().detach().numpy()
-                z_t = koopman_object.z(z_t[:num_hand], obj_OriState) # only update the object feature   
+                # z_t[:num_hand]
+                z_t = koopman_object.z(obs_dict['hand_jnt'], obj_OriState) # only update the object feature  obs_dict['hand_jnt'] 
 
         if current_hinge_pos > 1.35:
             success_list_sim.append(1)
