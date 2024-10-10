@@ -75,9 +75,10 @@ def get_env_rgbd(e):
 def train_koopman(Training_data, num_hand, num_obj, koopman_save_path):
     Koopman = DraftedObservable(num_hand, num_obj)
     num_obs = Koopman.compute_observable(num_hand, num_obj)
-
-    A = np.zeros((num_obs, num_obs))  
-    G = np.zeros((num_obs, num_obs))
+    num_action = len(Training_data[0][0]['action'])
+    assert num_action == num_hand
+    A = np.zeros((num_obs+num_action, num_obs+num_action))  
+    G = np.zeros((num_obs+num_action, num_obs+num_action))
     ## loop to collect data
     print("Drafted koopman training starts!\n")
     for k in tqdm(range(len(Training_data))):
@@ -85,12 +86,13 @@ def train_koopman(Training_data, num_hand, num_obj, koopman_save_path):
         obj_OriState = Training_data[k][0]['rgbd_feature'] 
         assert len(obj_OriState) == num_obj
         assert len(hand_OriState) == num_hand
-
         z_t = Koopman.z(hand_OriState, obj_OriState)  # initial states in lifted space
+        z_t = np.append(z_t, Training_data[k][0]['action'])
         for t in range(len(Training_data[k]) - 1):
-            hand_OriState = Training_data[k][t + 1]['handpos']
+            hand_OriState = Training_data[k][t+1]['handpos']
             obj_OriState = Training_data[k][t+1]['rgbd_feature']
             z_t_1 = Koopman.z(hand_OriState, obj_OriState) 
+            z_t_1 = np.append(z_t_1, Training_data[k][t+1]['action'])
             A += np.outer(z_t_1, z_t)
             G += np.outer(z_t, z_t)
             z_t = z_t_1

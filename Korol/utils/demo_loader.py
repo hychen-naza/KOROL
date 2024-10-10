@@ -50,8 +50,6 @@ def door_demo_playback(env_name, demo_paths, feature_paths, num_demo, multi_task
             tmp['handle_init'] = path['init_state_dict']['door_body_pos'] 
             tmp['observation'] = obs[35:38]
             tmp['action'] = actions[tt]
-            
-            #e.step(actions[tt])
             dict_value = feature_data[count].values()
             predict = list(dict_value)[0]
             tmp['rgbd_feature'] = predict

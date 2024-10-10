@@ -45,13 +45,15 @@ class DynamicsPredictionDataset(Dataset):
         path = self.data[index]
         current_idx = random.randint(0, len(path)-(self.length+2))
         robot_current = path[current_idx]['handpos']
+        action_current = path[current_idx]['action']
         count = path[current_idx]['count']
         # img_path = "./Door/Distinct_Data/rgbd_"+str(count)+".npy"
         img_path = self.img_path + "/rgbd_" + str(count) + ".npy"
         rgbd = np.load(img_path)
         rgbd = np.transpose(rgbd, (2, 0, 1))
         robot_next = [path[current_idx+i]['handpos'] for i in range(1,self.length+1)]
-        return rgbd, robot_current, robot_next
+        action_next = [path[current_idx+i]['action'] for i in range(1,self.length+1)]
+        return rgbd, robot_current, action_current, robot_next, action_next
 
 
 def main(args):
@@ -61,7 +63,7 @@ def main(args):
     folder_name = os.getcwd()
     num_hand = 28 
     num_obj = 8 
-
+    num_action = num_hand
 
     img_path = "./Door/Data"
     Controller_loc = './Door/controller/NN_controller_best.pt'
@@ -88,7 +90,7 @@ def main(args):
     feature_data_path = './Door/feature_door_demo_full.pickle'
     Koopman = DraftedObservable(num_hand, num_obj)
 
-    generate_feature(resnet_model, feature_data_path, img_path, device=device, img_size=num_demo*70)
+    #generate_feature(resnet_model, feature_data_path, img_path, device=device, img_size=num_demo*70)
     Training_data = door_demo_playback("door-v0", demo_data, feature_data_path, num_demo)
     Training_data_length = np.sum([len(demo) for demo in Training_data])
     # Resnet Dynamics Training dataset
@@ -111,19 +113,26 @@ def main(args):
         optimizer_feature = torch.optim.Adam(resnet_model.parameters(), lr=learningRate)
         ErrorInOriginalRobot = 0
         total_loss = 0
-        for batch_num, (rgbds, robot_currents, robot_nexts) in enumerate(dynamics_train_dataloader):
+        # linear_A = cont_koopman_operator[:-num_action, :-num_action]
+        # linear_B = cont_koopman_operator[-num_action:, -num_action:]
+        for batch_num, (rgbds, robot_currents, action_currents, robot_nexts, action_nexts) in enumerate(dynamics_train_dataloader):
             robot_currents = robot_currents.float().to(device)
+            action_currents = action_currents.float().to(device)
             rgbds = rgbds.float().to(device)
             _, pred_feats = resnet_model(rgbds)
             batch_size = len(robot_currents)
             for i in range(batch_size):
                 hand_OriState = robot_currents[i]
                 obj_OriState = pred_feats[i]
+                action = action_currents[i]
                 z_t_computed = Koopman.z_torch(hand_OriState, obj_OriState).to(device)
+                z_t_computed = torch.cat((z_t_computed, action), dim=0)
                 for t in range(len(robot_nexts)):
                     robot_next = robot_nexts[t][i].float().to(device)
-                    z_t_1_computed = torch.matmul(cont_koopman_operator.float(), z_t_computed.float()) 
-                    loss_val = loss(z_t_1_computed[:num_hand], robot_next)
+                    action_next = action_nexts[t][i].float().to(device)
+                    z_t_1_computed = torch.matmul(cont_koopman_operator.float(), z_t_computed.float())
+                    #z_t_1_computed = torch.matmul(linear_A.float(), z_t_computed.float()) + torch.matmul(linear_B.float(), action.float())
+                    loss_val = loss(z_t_1_computed[:num_hand], robot_next) + loss(z_t_1_computed[-num_action:], action_next)
                     ErrorInOriginalRobot += loss_val
                     z_t_computed = z_t_1_computed
                     total_loss += loss_val.item()
@@ -132,7 +141,7 @@ def main(args):
             optimizer_feature.step()
             ErrorInOriginalRobot = 0
             optimizer_feature.zero_grad()
-
+        print(f"epoch {epoch}, total_loss {total_loss}")
         loss_results.append(total_loss)
         if (epoch % 50 == 0 and epoch > 0):
             resnet_model.eval()
