@@ -83,16 +83,22 @@ def main(args):
 
     e = GymEnv("door-v0")
     e.reset()
-    Testing_data = e.generate_unseen_data_door(200) 
+    #Testing_data = e.generate_unseen_data_door(10) 
 
     koopman_save_path = os.path.join(folder_name, "Door/koopmanMatrix.npy")
     demo_data = pickle.load(open("./Door/Data/Testing.pickle", 'rb'))
     feature_data_path = './Door/feature_door_demo_full.pickle'
     Koopman = DraftedObservable(num_hand, num_obj)
 
-    #generate_feature(resnet_model, feature_data_path, img_path, device=device, img_size=num_demo*70)
-    Training_data = door_demo_playback("door-v0", demo_data, feature_data_path, num_demo)
+    num_train_demo = 190
+    num_test_demo = (num_demo - num_train_demo)
+
+    generate_feature(resnet_model, feature_data_path, img_path, device=device, img_size=num_demo*70)
+    Training_data, min_action_values, max_action_values = door_demo_playback("door-v0", demo_data, feature_data_path, num_demo)
+    Testing_data = Training_data[num_train_demo:]
+    Training_data = Training_data[:num_train_demo]
     Training_data_length = np.sum([len(demo) for demo in Training_data])
+    assert Training_data_length == num_train_demo*70
     # Resnet Dynamics Training dataset
     dynamics_batch_num = 8
     dynamics_train_dataset = DynamicsPredictionDataset(Training_data, img_path, length = int(args.N)) 
@@ -100,7 +106,7 @@ def main(args):
 
     train_koopman(Training_data, num_hand, num_obj, koopman_save_path)
     cont_koopman_operator = np.load(koopman_save_path) # matrix_file
-    #koopman_policy_control("door-v0", Controller, Koopman, cont_koopman_operator, Testing_data, False, num_hand, num_obj, "Drafted", resnet_model=resnet_model, device=device) #use_resnet=True, resnet_model=resnet_model
+    #koopman_policy_control("door-v0", Controller, Koopman, cont_koopman_operator, Testing_data, False, num_hand, num_obj, "Drafted", resnet_model=resnet_model, device=device, action_lb=min_action_values, action_ub=max_action_values) #use_resnet=True, resnet_model=resnet_model
     cont_koopman_operator = torch.from_numpy(cont_koopman_operator).to(device)
     
     loss = torch.nn.L1Loss()
@@ -126,13 +132,13 @@ def main(args):
                 obj_OriState = pred_feats[i]
                 action = action_currents[i]
                 z_t_computed = Koopman.z_torch(hand_OriState, obj_OriState).to(device)
-                z_t_computed = torch.cat((z_t_computed, action), dim=0)
+                #z_t_computed = torch.cat((z_t_computed, action), dim=0)
                 for t in range(len(robot_nexts)):
                     robot_next = robot_nexts[t][i].float().to(device)
                     action_next = action_nexts[t][i].float().to(device)
                     z_t_1_computed = torch.matmul(cont_koopman_operator.float(), z_t_computed.float())
                     #z_t_1_computed = torch.matmul(linear_A.float(), z_t_computed.float()) + torch.matmul(linear_B.float(), action.float())
-                    loss_val = loss(z_t_1_computed[:num_hand], robot_next) + loss(z_t_1_computed[-num_action:], action_next)
+                    loss_val = loss(z_t_1_computed[:num_hand], robot_next) #+ loss(z_t_1_computed[-num_action:], action_next)
                     ErrorInOriginalRobot += loss_val
                     z_t_computed = z_t_1_computed
                     total_loss += loss_val.item()
@@ -147,11 +153,14 @@ def main(args):
             resnet_model.eval()
             with torch.no_grad():
                 generate_feature(resnet_model, feature_data_path, img_path, device=device, img_size=num_demo*70)
-                Training_data = door_demo_playback("door-v0", demo_data, feature_data_path, num_demo)
+                #Training_data = door_demo_playback("door-v0", demo_data, feature_data_path, num_demo)
+                Training_data, min_action_values, max_action_values = door_demo_playback("door-v0", demo_data, feature_data_path, num_demo)
+                Testing_data = Training_data[num_train_demo:]
+                Training_data = Training_data[:num_train_demo]
                 train_koopman(Training_data, num_hand, num_obj, koopman_save_path)
                 cont_koopman_operator = np.load(koopman_save_path) # matrix_file
-                if (epoch % 50 == 0):
-                    success_rate = koopman_policy_control("door-v0", Controller, Koopman, cont_koopman_operator, Testing_data, False, num_hand, num_obj, "Drafted", resnet_model=resnet_model, device=device) #use_resnet=True, resnet_model=resnet_model
+                #if (epoch % 50 == 0):
+                    #success_rate = koopman_policy_control("door-v0", Controller, Koopman, cont_koopman_operator, Testing_data, False, num_hand, num_obj, "Drafted", resnet_model=resnet_model, device=device, action_lb=min_action_values, action_ub=max_action_values) #use_resnet=True, resnet_model=resnet_model
                 cont_koopman_operator = torch.from_numpy(cont_koopman_operator).to(device)
             resnet_model.train()
 

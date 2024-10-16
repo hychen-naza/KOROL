@@ -295,6 +295,7 @@ class GymEnv(object):
             episode_data['objvel'] = obs_visual[58:59]
             episode_data['handle_init'] = episode_data['init']['door_body_pos']
             samples.append([episode_data])
+            #print(f"ep {ep}, episode_data['init']['door_body_pos'] {episode_data['init']['door_body_pos']}")
         return samples
     
 

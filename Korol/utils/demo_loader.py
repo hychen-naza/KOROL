@@ -18,6 +18,8 @@ def door_demo_playback(env_name, demo_paths, feature_paths, num_demo, multi_task
     sample_index = np.arange(num_demo)
     count = 0
     success_list_sim = []
+    min_action_values = [100] * len(demo_paths[0]['actions'][0])
+    max_action_values = [-100] * len(demo_paths[0]['actions'][0])
     for i in tqdm(sample_index):
         path = demo_paths[i]
         path_data = []
@@ -50,12 +52,16 @@ def door_demo_playback(env_name, demo_paths, feature_paths, num_demo, multi_task
             tmp['handle_init'] = path['init_state_dict']['door_body_pos'] 
             tmp['observation'] = obs[35:38]
             tmp['action'] = actions[tt]
+            min_action_values = np.minimum(min_action_values, actions[tt])
+            max_action_values = np.maximum(max_action_values, actions[tt])
             dict_value = feature_data[count].values()
             predict = list(dict_value)[0]
             tmp['rgbd_feature'] = predict
             tmp['count'] = count
             count += 1
             path_data.append(tmp)
+            # if (tt == 0 and i < 10):
+            #     print(f"i {i}, path['init_state_dict']['door_body_pos']  {path['init_state_dict']['door_body_pos'] }")
         Training_data.append(path_data)
     #     obs_dict = e.env.get_obs_dict(e.env.sim)
     #     current_hinge_pos = obs_dict['door_pos']#obj_obs[28:29] # door opening angle
@@ -66,7 +72,7 @@ def door_demo_playback(env_name, demo_paths, feature_paths, num_demo, multi_task
     # pdb.set_trace()
     # with open('multi_task_demo/door_demo.pickle', 'wb') as handle:
     #     pickle.dump(Training_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    return Training_data
+    return Training_data, min_action_values, max_action_values
 
 
 def hammer_demo_playback(env_name, demo_paths, feature_paths, num_demo, multi_task = False):
