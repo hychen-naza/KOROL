@@ -51,7 +51,10 @@ def door_demo_playback(env_name, demo_paths, feature_paths, num_demo, multi_task
             tmp['objvel'] = obs_visual[58:59]
             tmp['handle_init'] = path['init_state_dict']['door_body_pos'] 
             tmp['observation'] = obs[35:38]
-            tmp['action'] = actions[tt]
+            if (tt == len(actions)-1):
+                tmp['action'] = observations[-1][:28]
+            else:
+                tmp['action'] = observations[tt+1][:28] #observations[tt+1][:28] - observations[tt][:28]#actions[tt]
             min_action_values = np.minimum(min_action_values, actions[tt])
             max_action_values = np.maximum(max_action_values, actions[tt])
             dict_value = feature_data[count].values()
