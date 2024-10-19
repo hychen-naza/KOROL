@@ -20,6 +20,8 @@ def door_demo_playback(env_name, demo_paths, feature_paths, num_demo, multi_task
     success_list_sim = []
     min_action_values = [100] * len(demo_paths[0]['actions'][0])
     max_action_values = [-100] * len(demo_paths[0]['actions'][0])
+    min_state_values = [100] * (len(demo_paths[0]['actions'][0])+8)
+    max_state_values = [-100] * (len(demo_paths[0]['actions'][0])+8)
     for i in tqdm(sample_index):
         path = demo_paths[i]
         path_data = []
@@ -44,25 +46,29 @@ def door_demo_playback(env_name, demo_paths, feature_paths, num_demo, multi_task
                 tmp['handpos'] = pad_handpos
             else:
                 tmp['handpos'] = handpos
-            
             tmp['handvel'] = obs_visual[30:58]
             tmp['objpos'] = obs[32:35]
-            
             tmp['objvel'] = obs_visual[58:59]
             tmp['handle_init'] = path['init_state_dict']['door_body_pos'] 
             tmp['observation'] = obs[35:38]
+            action = actions[tt]
+            #tmp['action'] = action
             if (tt == len(actions)-1):
-                tmp['action'] = observations[-1][:28]
+                tmp['action'] = observations_visualize[-1][:28]
             else:
-                tmp['action'] = observations[tt+1][:28] #observations[tt+1][:28] - observations[tt][:28]#actions[tt]
-            min_action_values = np.minimum(min_action_values, actions[tt])
-            max_action_values = np.maximum(max_action_values, actions[tt])
+                tmp['action'] = observations_visualize[tt+1][:28] #observations[tt+1][:28] - observations[tt][:28]#actions[tt]
             dict_value = feature_data[count].values()
             predict = list(dict_value)[0]
             tmp['rgbd_feature'] = predict
             tmp['count'] = count
             count += 1
             path_data.append(tmp)
+
+            min_action_values = np.minimum(min_action_values, actions[tt])
+            max_action_values = np.maximum(max_action_values, actions[tt])
+            min_state_values = np.minimum(min_state_values, np.append(handpos, predict))
+            max_state_values = np.maximum(max_state_values, np.append(handpos, predict))
+            #pdb.set_trace()
             # if (tt == 0 and i < 10):
             #     print(f"i {i}, path['init_state_dict']['door_body_pos']  {path['init_state_dict']['door_body_pos'] }")
         Training_data.append(path_data)
@@ -75,7 +81,7 @@ def door_demo_playback(env_name, demo_paths, feature_paths, num_demo, multi_task
     # pdb.set_trace()
     # with open('multi_task_demo/door_demo.pickle', 'wb') as handle:
     #     pickle.dump(Training_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    return Training_data, min_action_values, max_action_values
+    return Training_data, min_action_values, max_action_values, min_state_values, max_state_values
 
 
 def hammer_demo_playback(env_name, demo_paths, feature_paths, num_demo, multi_task = False):
