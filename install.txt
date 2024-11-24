@@ -43,7 +43,7 @@ pip install "cython<3"
 
 
 3.install mj_envs
-got into the mj_envs
+get into the mj_envs
 pip install -e .
 
 4.Run Korol code and install missing packages with pip as you need
