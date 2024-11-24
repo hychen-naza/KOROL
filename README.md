@@ -24,7 +24,7 @@ More instructions will come soon.
 ## Install
 Follow install.txt. 
 
-The Pytorch version we used is 2.3.1+cu121 
+The Pytorch version we used is 2.3.1+cu121, mujoco version 2.3.7
 
 ## DataSet
 Download the dataset for Door, Tool, Relocation and Reorientation in sim envs here
