@@ -28,7 +28,7 @@ def door_demo_playback(env_name, demo_paths, feature_paths, num_demo, multi_task
         # if multi_task:
         #     path['init_state_dict']['qpos'] = np.zeros(32)
         #     path['init_state_dict']['qvel'] = np.zeros(32)
-        e.set_env_state(path['init_state_dict'])
+        # e.set_env_state(path['init_state_dict'])
         actions = path['actions']
         observations = path['observations']  
         observations_visualize = path['observations_visualization']
@@ -52,11 +52,11 @@ def door_demo_playback(env_name, demo_paths, feature_paths, num_demo, multi_task
             tmp['handle_init'] = path['init_state_dict']['door_body_pos'] 
             tmp['observation'] = obs[35:38]
             action = actions[tt]
-            #tmp['action'] = action
-            if (tt == len(actions)-1):
-                tmp['action'] = observations_visualize[-1][:28]
-            else:
-                tmp['action'] = observations_visualize[tt+1][:28] #observations[tt+1][:28] - observations[tt][:28]#actions[tt]
+            # tmp['action'] = handpos
+            # if (tt == len(actions)-1):
+            #     tmp['action'] = observations_visualize[-1][:28]
+            # else:
+            #     tmp['action'] = observations_visualize[tt+1][:28] #observations[tt+1][:28] - observations[tt][:28]#actions[tt]
             dict_value = feature_data[count].values()
             predict = list(dict_value)[0]
             tmp['rgbd_feature'] = predict

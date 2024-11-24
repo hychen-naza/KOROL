@@ -13,7 +13,7 @@ class DraftedObservable(object):
         self.num_ori_handStates = num_handStates
         self.num_ori_objStates = num_objStates
         self.num_ori_states = num_handStates + num_objStates
-    
+
     def z_torch(self, handState, objStates):
         """
         Inputs: hand states(pos, vel) & object states(pos, vel)
@@ -22,13 +22,6 @@ class DraftedObservable(object):
         """
         obs = torch.zeros(self.compute_observable(self.num_ori_handStates, self.num_ori_objStates))
         index = 0
-        for i in range(self.num_ori_handStates):
-            obs[index] = handState[i]
-            index += 1
-        for i in range(self.num_ori_handStates):
-            obs[index] = handState[i] ** 2
-            index += 1
-        #pdb.set_trace() 
         for i in range(self.num_ori_objStates):
             obs[index] = objStates[i]
             index += 1
@@ -39,27 +32,52 @@ class DraftedObservable(object):
             for j in range(i + 1, self.num_ori_objStates):
                 obs[index] = objStates[i] * objStates[j]
                 index += 1            
-        for i in range(self.num_ori_handStates):
-            for j in range(i + 1, self.num_ori_handStates):
-                obs[index] = handState[i] * handState[j]
-                index += 1
-        # can add handState[i] ** 3
-        for i in range(self.num_ori_handStates):
-            obs[index] = handState[i] ** 3
-            index += 1
-        # for i in range(self.num_ori_objStates):
-        #     obs[index] = objStates[i] ** 3
-        #     index += 1   
-        # for i in range(self.num_ori_handStates):
-        #     for j in range(self.num_ori_handStates):
-        #         obs[index] = handState[i] ** 2 * handState[j]
-        #         index += 1
         for i in range(self.num_ori_objStates):
             for j in range(self.num_ori_objStates):
                 obs[index] = objStates[i] ** 2 * objStates[j]
                 index += 1
-        return obs
-    
+        for i in range(self.num_ori_handStates):
+            obs[index] = handState[i]
+            index += 1
+        return obs    
+    # def z_torch(self, handState, objStates):
+    #     """
+    #     Inputs: hand states(pos, vel) & object states(pos, vel)
+    #     Outputs: state in lifted space
+    #     Note: velocity is optional
+    #     """
+    #     obs = torch.zeros(self.compute_observable(self.num_ori_handStates, self.num_ori_objStates))
+    #     index = 0
+    #     for i in range(self.num_ori_handStates):
+    #         obs[index] = handState[i]
+    #         index += 1
+    #     for i in range(self.num_ori_handStates):
+    #         obs[index] = handState[i] ** 2
+    #         index += 1
+    #     #pdb.set_trace() 
+    #     for i in range(self.num_ori_objStates):
+    #         obs[index] = objStates[i]
+    #         index += 1
+    #     for i in range(self.num_ori_objStates):
+    #         obs[index] = objStates[i] ** 2
+    #         index += 1    
+    #     for i in range(self.num_ori_objStates):
+    #         for j in range(i + 1, self.num_ori_objStates):
+    #             obs[index] = objStates[i] * objStates[j]
+    #             index += 1            
+    #     for i in range(self.num_ori_handStates):
+    #         for j in range(i + 1, self.num_ori_handStates):
+    #             obs[index] = handState[i] * handState[j]
+    #             index += 1
+    #     # can add handState[i] ** 3
+    #     for i in range(self.num_ori_handStates):
+    #         obs[index] = handState[i] ** 3
+    #         index += 1
+    #     for i in range(self.num_ori_objStates):
+    #         for j in range(self.num_ori_objStates):
+    #             obs[index] = objStates[i] ** 2 * objStates[j]
+    #             index += 1
+    #     return obs
     def z(self, handState, objStates):  
         """
         Inputs: hand states(pos, vel) & object states(pos, vel)
@@ -68,12 +86,7 @@ class DraftedObservable(object):
         """
         obs = np.zeros(self.compute_observable(self.num_ori_handStates, self.num_ori_objStates))
         index = 0
-        for i in range(self.num_ori_handStates):
-            obs[index] = handState[i]
-            index += 1
-        for i in range(self.num_ori_handStates):
-            obs[index] = handState[i] ** 2
-            index += 1
+        # object state lifting
         for i in range(self.num_ori_objStates):
             obs[index] = objStates[i]
             index += 1
@@ -83,30 +96,75 @@ class DraftedObservable(object):
         for i in range(self.num_ori_objStates):
             for j in range(i + 1, self.num_ori_objStates):
                 obs[index] = objStates[i] * objStates[j]
-                index += 1            
-        for i in range(self.num_ori_handStates):
-            for j in range(i + 1, self.num_ori_handStates):
-                obs[index] = handState[i] * handState[j]
-                index += 1
-        # can add handState[i] ** 3
-        for i in range(self.num_ori_handStates):
-            obs[index] = handState[i] ** 3
-            index += 1
-        # for i in range(self.num_ori_objStates):
-        #     obs[index] = objStates[i] ** 3
-        #     index += 1   
-        # for i in range(self.num_ori_handStates):
-        #     for j in range(self.num_ori_handStates):
-        #         obs[index] = handState[i] ** 2 * handState[j]
-        #         index += 1
+                index += 1   
         for i in range(self.num_ori_objStates):
             for j in range(self.num_ori_objStates):
                 obs[index] = objStates[i] ** 2 * objStates[j]
                 index += 1
+        # hand state lifting
+        for i in range(self.num_ori_handStates):
+            obs[index] = handState[i]
+            index += 1
+        # for i in range(self.num_ori_handStates):
+        #     obs[index] = handState[i] ** 2
+        #     index += 1      
+        # for i in range(self.num_ori_handStates):
+        #     obs[index] = handState[i] ** 3
+        #     index += 1
+        # for i in range(self.num_ori_handStates):
+        #     for j in range(i + 1, self.num_ori_handStates):
+        #         obs[index] = handState[i] * handState[j]
+        #         index += 1
         return obs
+        
+    # def z(self, handState, objStates):  
+    #     """
+    #     Inputs: hand states(pos, vel) & object states(pos, vel)
+    #     Outputs: state in lifted space
+    #     Note: velocity is optional
+    #     """
+    #     obs = np.zeros(self.compute_observable(self.num_ori_handStates, self.num_ori_objStates))
+    #     index = 0
+    #     for i in range(self.num_ori_handStates):
+    #         obs[index] = handState[i]
+    #         index += 1
+    #     for i in range(self.num_ori_handStates):
+    #         obs[index] = handState[i] ** 2
+    #         index += 1
+    #     for i in range(self.num_ori_objStates):
+    #         obs[index] = objStates[i]
+    #         index += 1
+    #     for i in range(self.num_ori_objStates):
+    #         obs[index] = objStates[i] ** 2
+    #         index += 1    
+    #     for i in range(self.num_ori_objStates):
+    #         for j in range(i + 1, self.num_ori_objStates):
+    #             obs[index] = objStates[i] * objStates[j]
+    #             index += 1            
+    #     for i in range(self.num_ori_handStates):
+    #         for j in range(i + 1, self.num_ori_handStates):
+    #             obs[index] = handState[i] * handState[j]
+    #             index += 1
+    #     # can add handState[i] ** 3
+    #     for i in range(self.num_ori_handStates):
+    #         obs[index] = handState[i] ** 3
+    #         index += 1
+    #     # for i in range(self.num_ori_objStates):
+    #     #     obs[index] = objStates[i] ** 3
+    #     #     index += 1   
+    #     # for i in range(self.num_ori_handStates):
+    #     #     for j in range(self.num_ori_handStates):
+    #     #         obs[index] = handState[i] ** 2 * handState[j]
+    #     #         index += 1
+    #     for i in range(self.num_ori_objStates):
+    #         for j in range(self.num_ori_objStates):
+    #             obs[index] = objStates[i] ** 2 * objStates[j]
+    #             index += 1
+    #     return obs
     
     def compute_observable(self, num_hand, num_obj):
-        return int(2 * (num_hand + num_obj) + (num_obj - 1) * num_obj / 2 + num_hand + num_obj ** 2 + (num_hand - 1) * num_hand / 2)  
+        return int(2 * num_obj + (num_obj - 1) * num_obj / 2 + num_hand + num_obj ** 2)  
+        #return int(2 * (num_hand + num_obj) + (num_obj - 1) * num_obj / 2 + num_hand + num_obj ** 2 + (num_hand - 1) * num_hand / 2)  
 
 class MLPObservable(object):
     def __init__(self, num_handStates, num_objStates, param):
