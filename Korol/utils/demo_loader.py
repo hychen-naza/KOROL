@@ -24,7 +24,7 @@ def door_demo_playback(env_name, demo_paths, feature_paths, num_demo, multi_task
         # if multi_task:
         #     path['init_state_dict']['qpos'] = np.zeros(32)
         #     path['init_state_dict']['qvel'] = np.zeros(32)
-        e.set_env_state(path['init_state_dict'])
+        # e.set_env_state(path['init_state_dict'])
         actions = path['actions']
         observations = path['observations']  
         observations_visualize = path['observations_visualization']
@@ -89,7 +89,7 @@ def hammer_demo_playback(env_name, demo_paths, feature_paths, num_demo, multi_ta
         # if multi_task:
         #     path['init_state_dict']['qpos'] = np.zeros(37)
         #     path['init_state_dict']['qvel'] = np.zeros(37)
-        e.set_env_state(path['init_state_dict'])
+        # e.set_env_state(path['init_state_dict'])
         actions = path['actions']
         observations = path['observations'] 
         observations_visualize = path['observations_visualization']

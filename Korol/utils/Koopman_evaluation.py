@@ -118,37 +118,48 @@ def koopman_policy_control(env_name, controller, koopman_object, koopman_matrix,
         num_handpos = len(Test_data[k][0]['handpos'])
         hand_OriState = Test_data[k][0]['handpos']
 
-        init_state_dict['qpos'] = Test_data[k][0]['init']['qpos']
-        init_state_dict['qvel'] = Test_data[k][0]['init']['qvel']
+        init_state_dict['qpos'] = Test_data[k][0]['init']['qpos'] #np.array([0]*1934) #
+        init_state_dict['qvel'] = Test_data[k][0]['init']['qvel'] #np.array([0]*1934) #
         init_state_dict['door_body_pos'] = Test_data[k][0]['init']['door_body_pos'] 
         e.set_env_state(init_state_dict)
 
-        rgb, depth = e.env.mj_render()
-        rgb = (rgb.astype(np.uint8) - 128.0) / 128
-        depth = depth[...,np.newaxis]
-        rgbd = np.concatenate((rgb,depth),axis=2)
-        rgbd = np.transpose(rgbd, (2, 0, 1))
-        rgbd = rgbd[np.newaxis, ...]
+        # rgb, depth = e.env.mj_render()
+        # rgb = (rgb.astype(np.uint8) - 128.0) / 128
+        # depth = depth[...,np.newaxis]
+        # rgbd = np.concatenate((rgb,depth),axis=2)
+        # rgbd = np.transpose(rgbd, (2, 0, 1))
+        # rgbd = rgbd[np.newaxis, ...]
+        init_img_count = (200-len(Test_data)+k)*70
+        img_path_goal = f"./Door/Data/rgbd_{init_img_count}.npy"
+        rgbd_goal = np.load(img_path_goal)
+        rgbd_goal = np.transpose(rgbd_goal, (2, 0, 1))
+        rgbd_goal = rgbd_goal[np.newaxis, ...]
 
-        _, implict_objpos = resnet_model(torch.from_numpy(rgbd).float().to(device)) 
+        _, implict_objpos = resnet_model(torch.from_numpy(rgbd_goal).float().to(device)) 
         obj_OriState = implict_objpos[0].cpu().detach().numpy()
         z_t = koopman_object.z(hand_OriState, obj_OriState)  
         for t in range(horizon - 1): 
             z_t_1_computed = np.dot(koopman_matrix, z_t)
             x_t_1_computed = np.append(z_t_1_computed[:num_hand], z_t_1_computed[2 * num_hand: 2 * num_hand + num_obj])
-            obj_pos_world = x_t_1_computed[56:59]
+            # obj_pos_world = x_t_1_computed[56:59]
             hand_pos_desired = x_t_1_computed[:num_handpos]  
             current = z_t[:num_hand] #e.get_env_state()['qpos'][:28] # current state
             z_t = z_t_1_computed
-            obs_dict = e.env.get_obs_dict(e.env.sim)
-            
+            if (t%5 == 0):
+                img_obs, depth_obs = e.env.mj_render()
+                from PIL import Image 
+                img_obs = Image.fromarray(img_obs)
+                img_obs.save(f"./vis/door_opening_{k}_{t}.png")
+                
             set_goal = hand_pos_desired.copy() # next state
             NN_input = torch.from_numpy(np.append(current, set_goal))
             NN_output = controller(NN_input).detach().numpy()
             e.step(NN_output)  
             obs_dict = e.env.get_obs_dict(e.env.sim)
             current_hinge_pos = obs_dict['door_pos']
+            print(f"k {k}, t {t}, current_hinge_pos {current_hinge_pos}")
         if current_hinge_pos > 1.35:
+            print(f"k {k}")
             success_list_sim.append(1)
     print("Success rate (sim) = %f" % (len(success_list_sim) / len(Test_data)))
     return len(success_list_sim) / len(Test_data)
@@ -160,11 +171,11 @@ def koopman_policy_control_hammer(env, controller, koopman_object, koopman_matri
     init_state_dict = dict()
     success_list_sim = []
     success_rate = str()
-    horizon = 51
+    horizon = 40 #
     for k in tqdm(range(len(Test_data))): #len(Test_data)
         gif_frames = []
-        init_state_dict['qpos'] = Test_data[k][0]['init']['qpos']
-        init_state_dict['qvel'] = Test_data[k][0]['init']['qvel']
+        init_state_dict['qpos'] = np.array([0]*1937) #Test_data[k][0]['init']['qpos']
+        init_state_dict['qvel'] = np.array([0]*1937) #Test_data[k][0]['init']['qvel']
         init_state_dict['board_pos'] = Test_data[k][0]['init']['board_pos']  # fixed for each piece of demo data
         env.set_env_state(init_state_dict)
 
@@ -172,13 +183,18 @@ def koopman_policy_control_hammer(env, controller, koopman_object, koopman_matri
         assert num_handpos == num_hand
         hand_OriState = Test_data[k][0]['handpos']
 
-        rgb, depth = env.env.mj_render()
-        rgb = (rgb.astype(np.uint8) - 128.0) / 128
-        depth = depth[...,np.newaxis]
-        rgbd = np.concatenate((rgb,depth),axis=2)
-        rgbd = np.transpose(rgbd, (2, 0, 1))
-        rgbd = rgbd[np.newaxis, ...]
-        _, implict_objpos = resnet_model(torch.from_numpy(rgbd).float().to(device)) 
+        # rgb, depth = env.env.mj_render()
+        # rgb = (rgb.astype(np.uint8) - 128.0) / 128
+        # depth = depth[...,np.newaxis]
+        # rgbd = np.concatenate((rgb,depth),axis=2)
+        # rgbd = np.transpose(rgbd, (2, 0, 1))
+        # rgbd = rgbd[np.newaxis, ...]
+        init_img_count = (200-len(Test_data)+k)*100
+        img_path_goal = f"./Tool/Data/rgbd_{init_img_count}.npy"
+        rgbd_goal = np.load(img_path_goal)
+        rgbd_goal = np.transpose(rgbd_goal, (2, 0, 1))
+        rgbd_goal = rgbd_goal[np.newaxis, ...]
+        _, implict_objpos = resnet_model(torch.from_numpy(rgbd_goal).float().to(device)) 
         implict_objpos = implict_objpos[0].cpu().detach().numpy()
         obj_OriState = implict_objpos
         
@@ -197,12 +213,18 @@ def koopman_policy_control_hammer(env, controller, koopman_object, koopman_matri
             NN_output = controller(NN_input).detach().numpy()   
             env.step(NN_output)  # Visualize the demo using the actions (more like a simulation)
             #gt_hand_pos = Test_data[k][t + 1]['handpos']
+            if (t%5 == 0):
+                img_obs, depth_obs = env.env.mj_render()
+                from PIL import Image 
+                img_obs = Image.fromarray(img_obs)
+                img_obs.save(f"./vis/hammer_{k}_{t}.png")
             obs_dict = env.env.get_obs_dict(env.env.sim)
             obj_obs = env.get_obs()
             current_nail_pos = obs_dict['target_pos']#obs_dict['obj_pos']#obj_obs[42:45]
             goal_nail_pos = obs_dict['goal_pos']#obj_obs[46:49] #Test_data[k][t]['nail_goal'] #obj_obs[46:49]
             dist = np.linalg.norm(current_nail_pos - goal_nail_pos)
-        if dist < 0.01:
+            print(f"k {k}, t {t} dist {dist}")
+        if dist < 0.012:
             success_list_sim.append(1)
     print("Success rate (sim) = %f" % (len(success_list_sim) / len(Test_data)))
     return len(success_list_sim) / len(Test_data)

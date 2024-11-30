@@ -81,15 +81,17 @@ def main(args):
 
     e = GymEnv("door-v0")
     e.reset()
-    Testing_data = e.generate_unseen_data_door(200) 
+    # Testing_data = e.generate_unseen_data_door(200) 
 
     koopman_save_path = os.path.join(folder_name, "Door/koopmanMatrix.npy")
     demo_data = pickle.load(open("./Door/Data/Testing.pickle", 'rb'))
     feature_data_path = './Door/feature_door_demo_full.pickle'
     Koopman = DraftedObservable(num_hand, num_obj)
-
+    num_train_demo = 190
     generate_feature(resnet_model, feature_data_path, img_path, device=device, img_size=num_demo*70)
     Training_data = door_demo_playback("door-v0", demo_data, feature_data_path, num_demo)
+    Testing_data = Training_data[num_train_demo:]
+    Training_data = Training_data[:num_train_demo]
     Training_data_length = np.sum([len(demo) for demo in Training_data])
     # Resnet Dynamics Training dataset
     dynamics_batch_num = 8
@@ -98,7 +100,7 @@ def main(args):
 
     train_koopman(Training_data, num_hand, num_obj, koopman_save_path)
     cont_koopman_operator = np.load(koopman_save_path) # matrix_file
-    #koopman_policy_control("door-v0", Controller, Koopman, cont_koopman_operator, Testing_data, False, num_hand, num_obj, "Drafted", resnet_model=resnet_model, device=device) #use_resnet=True, resnet_model=resnet_model
+    koopman_policy_control("door-v0", Controller, Koopman, cont_koopman_operator, Testing_data, False, num_hand, num_obj, "Drafted", resnet_model=resnet_model, device=device) #use_resnet=True, resnet_model=resnet_model
     cont_koopman_operator = torch.from_numpy(cont_koopman_operator).to(device)
     
     loss = torch.nn.L1Loss()

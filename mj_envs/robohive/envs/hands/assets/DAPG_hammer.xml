@@ -68,7 +68,7 @@
             <geom name="C_forearm1" class="DC_Hand" size="0.05 0.033" pos="0 0 0.29" type="capsule" rgba="0.4 0.5 0.6 0.1" />
 
             <!-- ======= Adroit ======= -->
-            <include file="DAPG_Adroit.xml"/>
+            <include file="DAPG_Adroit_wo_skin.xml"/>
         </body>
 
         <!-- ======= Nail ======= -->
@@ -108,4 +108,5 @@
         <general name="A_ARRy" joint="ARRy" ctrlrange="-0.3 0.3" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0"/>
     </actuator>
     <include file='DAPG_assets.xml'/>
+    <size njmax="11000" nconmax="2500"/>
 </mujoco>

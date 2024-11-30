@@ -59,7 +59,7 @@ class DynamicsPredictionDataset(Dataset):
 def main(args):
     learningRate = 1e-4 
     num_demo = 200
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = "cuda:1" if torch.cuda.is_available() else "cpu"
     folder_name = os.getcwd()
     num_hand = 26
     num_obj = 8 
@@ -86,16 +86,17 @@ def main(args):
     
     e = GymEnv(env_name)
     e.reset()
-    Testing_data = e.generate_unseen_data_hammer(200) 
-
+    # Testing_data = e.generate_unseen_data_hammer(200) 
     koopman_save_path = f"./{env}/koopmanMatrix.npy"
     #os.path.join(folder_name, "koopmanMatrix.npy")
     demo_data = pickle.load(open(f"./{env}/Data/Hammer_task.pickle", 'rb'))
     feature_data_path = f'./{env}/feature_{env}_demo_full.pickle'
     Koopman = DraftedObservable(num_hand, num_obj)
-
+    num_train_demo = 190
     generate_feature(resnet_model, feature_data_path, img_path, device=device, img_size=num_demo*100)
     Training_data = hammer_demo_playback(env_name, demo_data, feature_data_path, num_demo)
+    Testing_data = Training_data[num_train_demo:]
+    Training_data = Training_data[:num_train_demo]
     # Resnet Dynamics Training dataset
     dynamics_batch_num = 8
     dynamics_train_dataset = DynamicsPredictionDataset(Training_data, img_path, length = int(args.N)) 
@@ -103,7 +104,7 @@ def main(args):
 
     train_koopman(Training_data, num_hand, num_obj, koopman_save_path)
     cont_koopman_operator = np.load(koopman_save_path) # matrix_file
-    #init_succ = koopman_policy_control_hammer(e, Controller, Koopman, cont_koopman_operator, Testing_data, False, num_hand, num_obj, "Drafted", resnet_model=resnet_model, device=device) 
+    init_succ = koopman_policy_control_hammer(e, Controller, Koopman, cont_koopman_operator, Testing_data, False, num_hand, num_obj, "Drafted", resnet_model=resnet_model, device=device) 
     cont_koopman_operator = torch.from_numpy(cont_koopman_operator).to(device)
 
     loss = torch.nn.L1Loss()

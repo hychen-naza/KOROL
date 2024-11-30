@@ -81,7 +81,7 @@ class DoorEnvV0(mujoco_env.MujocoEnv, utils.EzPickle, ObsVecDict):
         # qpos for hand, xpos for obj, xpos for target
         obs_dict = {}
         obs_dict['time'] = np.array([sim.data.time])
-        obs_dict['hand_jnt'] = sim.data.qpos[1:-2].copy()
+        obs_dict['hand_jnt'] = sim.data.qpos[:-2].copy() #sim.data.qpos[1:-2].copy()
         obs_dict['hand_vel'] = sim.data.qvel[:-2].copy()
         obs_dict['handle_pos'] = sim.data.site_xpos[self.handle_sid].copy()
         obs_dict['palm_pos'] = sim.data.site_xpos[self.grasp_sid].copy()
