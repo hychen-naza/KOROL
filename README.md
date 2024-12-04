@@ -3,7 +3,9 @@
 Hongyi Chen, Abulikemu Abuduweili\*, Aviral Agrawal\*, Yunhai Han\*, Harish Ravichandar, Changliu Liu, Jeffrey Ichnowski
 
 \*equal contribution
-<img src="korol_video-ezgif.com-video-to-gif-converter.gif" width="400" height="460">
+
+<img src="korol_video-ezgif.com-video-to-gif-converter.gif" width="400" height=auto>
+
 [Watch the video](korol_video.mp4)
 
 A link to our paper can be found on [Arxiv](https://arxiv.org/abs/2407.00548) [OpenReview](https://openreview.net/forum?id=A6ikGJRaKL&noteId=5JYQQNrhkp).
